@@ -38,6 +38,7 @@ const button = document.getElementById("playButton");
 const statusEl = document.getElementById("status");
 let controller = null;
 let apiReady = false;
+let seekOnNextPlayback = false;
 
 window.onSpotifyIframeApiReady = (IFrameAPI) => {
   IFrameAPI.createController(document.getElementById("player"), {
@@ -51,9 +52,20 @@ window.onSpotifyIframeApiReady = (IFrameAPI) => {
       statusEl.textContent = "Klaar om te luisteren. Tik op de knop om te beginnen.";
     });
     controller.addListener("playback_started", () => {
-      statusEl.textContent = "Veel luisterplezier ♡";
+      if (seekOnNextPlayback) {
+        seekOnNextPlayback = false;
+        // Seek only after playback has actually started; this is more reliable
+        // than passing a startAt option while loading the track.
+        window.setTimeout(() => {
+          try {
+            controller.seek(startAtSeconds);
+            statusEl.textContent = "We proberen af te spelen vanaf 1:06. Controleer de tijd in de speler.";
+          } catch (e) {
+            statusEl.textContent = "Spotify kon niet automatisch naar 1:06 springen. Probeer de tijd in de speler handmatig te verzetten.";
+          }
+        }, 700);
+      }
     });
-    controller.loadUri("spotify:track:0p9kp28VdoiuIxgzkzhZLU", { startAt: startAtSeconds });
   });
 };
 
@@ -62,9 +74,9 @@ button.addEventListener("click", () => {
     statusEl.textContent = "De Spotify-speler wordt nog geladen. Probeer het zo nog eens.";
     return;
   }
-  statusEl.textContent = "We proberen het nummer vanaf 1:06 te starten…";
-  // Spotify's iframe player may enforce its own playback and seek limitations.
-  controller.loadUri("spotify:track:0p9kp28VdoiuIxgzkzhZLU", { startAt: startAtSeconds });
+  statusEl.textContent = "Het liedje wordt geladen; we springen daarna naar 1:06…";
+  seekOnNextPlayback = true;
+  controller.loadUri("spotify:track:0p9kp28VdoiuIxgzkzhZLU");
   controller.play();
 });
 

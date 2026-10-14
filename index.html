@@ -3,68 +3,54 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#f7f2e7">
+<meta name="theme-color" content="#f8f5ed">
 <title>Siep — I got life</title>
 <style>
-:root{--paper:#f7f2e7;--ink:#102d45;--blue:#4389ad}
 *{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:Georgia,"Times New Roman",serif}
-main{max-width:560px;margin:0 auto;padding:20px 18px 36px;text-align:center}
-.art{display:block;width:100%;height:auto;max-height:72vh;object-fit:contain;object-position:center top}
-h1{font-size:clamp(54px,14vw,82px);font-weight:normal;line-height:.95;color:var(--blue);margin:4px 0 8px}
-.tagline{font-size:clamp(24px,6vw,34px);letter-spacing:.03em;margin:0 0 22px}
-button{font:600 16px Arial,sans-serif;border:0;border-radius:999px;background:var(--ink);color:#fff;padding:16px 24px;cursor:pointer}
-button:focus-visible{outline:3px solid var(--blue);outline-offset:4px}
-#status{font:14px/1.5 Arial,sans-serif;min-height:42px;color:#4f5f67;margin:16px auto 8px;max-width:360px}
-#player{width:100%;margin:10px auto 0}
-.note{font:12px/1.5 Arial,sans-serif;color:#66716e;margin-top:18px}
-@media(min-width:600px){main{padding-top:28px}.art{max-height:650px}}
+body{margin:0;background:#f8f5ed;font-family:Arial,sans-serif}
+main{width:min(100%,1000px);margin:0 auto;padding:0 0 22px;text-align:center}
+.hero{position:relative;width:100%;line-height:0}
+.hero img{display:block;width:100%;height:auto}
+#playButton{position:absolute;left:36.4%;top:54.8%;width:27.2%;height:8.1%;border:0;border-radius:999px;background:transparent;cursor:pointer;color:transparent}
+#playButton:focus-visible{outline:3px solid #2d4329;outline-offset:3px}
+#status{min-height:24px;padding:0 16px;margin:10px auto 8px;color:#52604e;font:14px/1.5 Arial,sans-serif}
+#player{width:min(100% - 28px,360px);margin:0 auto}
+.hint{font:12px/1.5 Arial,sans-serif;color:#6b7568;margin:10px 14px 0}
+@media(max-width:480px){#status{font-size:13px}}
 </style>
 </head>
 <body>
 <main>
-  <img class="art" src="./siep-illustratie.png" alt="Illustratie van een baby in een hangende wieg, een poes, een vogel en bloemen">
-  <h1>Siep</h1>
-  <p class="tagline">I got life</p>
-  <button id="playButton" type="button">▶ Luister naar het liedje</button>
-  <p id="status" role="status" aria-live="polite">Tik op de knop om het nummer vanaf 1:06 te starten.</p>
+  <div class="hero">
+    <img src="./siep-webpagina.png" alt="Siep — I got life, met een waterverfillustratie van een kindje in een weiland met een voetbal en een knop om naar het liedje te luisteren">
+    <button id="playButton" type="button" aria-label="Luister naar het liedje vanaf 1 minuut en 6 seconden">Luister naar het liedje</button>
+  </div>
+  <p id="status" role="status" aria-live="polite">Tik op de knop in de afbeelding om het nummer vanaf 1:06 te starten.</p>
   <div id="player"></div>
-  <p class="note">Een klein liedje, met heel veel liefde.</p>
+  <p class="hint">Als Spotify niet automatisch op 1:06 begint, controleer dan de tijd in de speler.</p>
 </main>
 <script>
 const trackUrl = "https://open.spotify.com/track/0p9kp28VdoiuIxgzkzhZLU";
+const trackUri = "spotify:track:0p9kp28VdoiuIxgzkzhZLU";
 const startAtSeconds = 66;
 const button = document.getElementById("playButton");
 const statusEl = document.getElementById("status");
 let controller = null;
 let apiReady = false;
-let seekOnNextPlayback = false;
 
 window.onSpotifyIframeApiReady = (IFrameAPI) => {
   IFrameAPI.createController(document.getElementById("player"), {
-    uri: "spotify:track:0p9kp28VdoiuIxgzkzhZLU",
+    uri: trackUri,
     width: "100%",
     height: 152
   }, (embedController) => {
     controller = embedController;
     apiReady = true;
     controller.addListener("ready", () => {
-      statusEl.textContent = "Klaar om te luisteren. Tik op de knop om te beginnen.";
+      statusEl.textContent = "Klaar om te luisteren. Tik op de knop in de afbeelding.";
     });
     controller.addListener("playback_started", () => {
-      if (seekOnNextPlayback) {
-        seekOnNextPlayback = false;
-        // Seek only after playback has actually started; this is more reliable
-        // than passing a startAt option while loading the track.
-        window.setTimeout(() => {
-          try {
-            controller.seek(startAtSeconds);
-            statusEl.textContent = "We proberen af te spelen vanaf 1:06. Controleer de tijd in de speler.";
-          } catch (e) {
-            statusEl.textContent = "Spotify kon niet automatisch naar 1:06 springen. Probeer de tijd in de speler handmatig te verzetten.";
-          }
-        }, 700);
-      }
+      statusEl.textContent = "Veel luisterplezier ♡";
     });
   });
 };
@@ -74,10 +60,9 @@ button.addEventListener("click", () => {
     statusEl.textContent = "De Spotify-speler wordt nog geladen. Probeer het zo nog eens.";
     return;
   }
-  statusEl.textContent = "Het liedje wordt geladen; we springen daarna naar 1:06…";
-  seekOnNextPlayback = true;
-  controller.loadUri("spotify:track:0p9kp28VdoiuIxgzkzhZLU");
-  controller.play();
+  statusEl.textContent = "We proberen het nummer vanaf 1:06 te starten…";
+  controller.loadEntity(trackUrl, false, startAtSeconds);
+  window.setTimeout(() => controller.play(), 500);
 });
 
 const script = document.createElement("script");

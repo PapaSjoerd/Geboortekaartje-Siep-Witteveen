@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f8f5ed">
+<title>Siep — I got life</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f8f5ed;color:#33463e;font-family:Arial,sans-serif}
+main{width:min(100%,1000px);margin:0 auto;padding:0 0 30px;text-align:center}
+.hero{position:relative;width:100%;line-height:0}
+.hero img{display:block;width:100%;height:auto}
+#playButton{position:absolute;left:36.4%;top:54.8%;width:27.2%;height:8.1%;border:0;border-radius:999px;background:transparent;cursor:pointer;color:transparent}
+#playButton:focus-visible{outline:3px solid #2d4329;outline-offset:3px}
+#status{min-height:24px;padding:0 16px;margin:12px auto 12px;color:#52604e;font:14px/1.5 Arial,sans-serif}
+.section{width:min(92%,440px);margin:20px auto 0;padding:20px 18px;border:1px solid #d9dfd5;border-radius:18px;background:rgba(255,255,255,.52)}
+h2{font:normal 23px Georgia,serif;margin:0 0 10px}
+.note{font:14px/1.5 Arial,sans-serif;color:#66756c;margin:0 0 14px}
+a.spotify{display:inline-block;background:#33463e;color:#fff;text-decoration:none;border-radius:999px;padding:12px 19px;font-size:15px;font-weight:600}
+a.spotify:focus-visible{outline:3px solid #8c9d8b;outline-offset:3px}
+a.spotify:hover{opacity:.9}
+.audio-wrap{margin:14px auto 0;width:100%}
+a.textlink{color:#33463e;text-decoration:underline;overflow-wrap:anywhere}
+@media(max-width:480px){#status{font-size:13px}.section{padding:18px 14px}}
+</style>
+</head>
+<body>
+<main>
+  <div class="hero">
+    <img src="./siep-webpagina.png" alt="Siep — I got life, met een waterverfillustratie van een kindje in een weiland met een voetbal en een knop om naar het liedje te luisteren">
+    <button id="playButton" type="button" aria-label="Speel het opgenomen fragment af">Luister naar ons liedje</button>
+  </div>
+  <p id="status" role="status" aria-live="polite">Tik op de knop in de afbeelding om het opgenomen fragment te beluisteren.</p>
+  <audio id="audio" preload="metadata" playsinline controls style="display:none;width:min(92%,440px);margin:0 auto">
+    <source src="./siep-fragment.m4a" type="audio/mp4">
+    Je browser kan dit audiobestand niet afspelen. Gebruik de Spotify-link hieronder.
+  </audio>
+  <section class="section" aria-labelledby="spotify-title">
+    <h2 id="spotify-title">Het originele nummer</h2>
+    <p class="note">Wil je het volledige nummer horen? Open het op Spotify.</p>
+    <a class="spotify" href="https://open.spotify.com/track/0p9kp28VdoiuIxgzkzhZLU" target="_blank" rel="noopener noreferrer">♫ Beluister op Spotify</a>
+  </section>
+</main>
+<script>
+const audio = document.getElementById('audio');
+const button = document.getElementById('playButton');
+const status = document.getElementById('status');
+button.addEventListener('click', async () => {
+  audio.style.display = 'block';
+  try {
+    await audio.play();
+    status.textContent = 'Veel luisterplezier ♡';
+  } catch (e) {
+    status.textContent = 'Tik op afspelen in de audiospeler hieronder.';
+    audio.focus();
+  }
+});
+audio.addEventListener('ended', () => { status.textContent = 'Veel liefs ♡'; });
+audio.addEventListener('error', () => { status.textContent = 'Het fragment kon niet worden geladen. Probeer het opnieuw of open het originele nummer op Spotify.'; });
+</script>
+</body>
+</html>
